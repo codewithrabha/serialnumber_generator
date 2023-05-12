@@ -1,0 +1,30 @@
+function set_serial_number($post_ID, $post, $update) {
+  if ($post->post_type == 'post') {
+    $args = array(
+      'post_type' => 'post',
+      'meta_key' => 'serial_number',
+      'orderby' => 'meta_value_num',
+      'order' => 'DESC',
+      'posts_per_page' => 1,
+      'post__not_in' => array($post_ID),
+    );
+
+    $query = new WP_Query($args);
+
+    if (empty($query->posts)) {
+      $last_serial_number = 99;
+    } else {
+      $last_post = $query->posts[0];
+      $last_serial_number = get_post_meta($last_post->ID, 'serial_number', true);
+    }
+
+    if (empty($last_serial_number)) {
+      $last_serial_number = 99;
+    }
+
+    $new_serial_number = $last_serial_number + 1;
+    update_post_meta($post_ID, 'serial_number', $new_serial_number);
+  }
+}
+
+add_action('wp_insert_post', 'set_serial_number', 10, 3);
